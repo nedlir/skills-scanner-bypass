@@ -1,0 +1,17 @@
+{
+    "circle_order": 8,
+    "rings": [
+        {"points": 8, "scale": 23, "offset_deg": 0},
+        {"points": 12, "scale": 47, "offset_deg": 30},
+        {"points": 16, "scale": 31, "offset_deg": 15},
+        {"points": 20, "scale": 59, "offset_deg": 45},
+        {"points": 6, "scale": 71, "offset_deg": 60}
+    ],
+    "rendering": {
+        "canvas_width": 64,
+        "canvas_height": 32,
+        "ring_glyphs": "*o#@+",
+        "show_radials": true,
+        "label_offset": 1
+    }
+}
