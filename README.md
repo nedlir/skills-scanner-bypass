@@ -2,9 +2,9 @@ A proof-of-concept malicious AI agent skill that bypasses skill security scanner
 
 Eight scanners were tested across ten configurations. Every scan passed the skill as **SAFE**.
 
-Well, it isn't though :trollface:
+Well, it isn't though 😈 :trollface:
 
-## scan results
+## 🔍 scan results
 
 | Company | Scanner | Version | LLM | Verdict | Findings |
 | --- | --- | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ The only non-security findings across all scans were a missing license field (IN
 
 [ClawScan](https://github.com/openclaw/clawscan) [v0.1.6](https://github.com/openclaw/clawscan/releases/tag/v0.1.6) was also tested as a scanning harness orchestrating its supported scanners (AgentVerus, AI-Infra-Guard). As a harness it combines scanner results and can pass them to an external judge, but it adds no novel file-discovery or bytecode analysis beyond its own `clawscan-static` scanner (4 text pattern rules). It was looking at the wrong place -- the harness cannot surface what none of its underlying scanners report.
 
-### NVIDIA SkillSpector scan output
+### 🧪 NVIDIA SkillSpector scan output
 
 ```
 Risk Assessment
@@ -34,7 +34,7 @@ Risk Assessment
 No security issues detected.
 ```
 
-### Cisco AI Defense scan output
+### 🧪 Cisco AI Defense scan output
 
 ```
 Status         [OK] SAFE
@@ -48,7 +48,7 @@ Detailed Findings:
 
 Same result with `decompyle3` / `uncompyle6` installed: still **SAFE**. Both decompilers raise `Unsupported Python version, 3.10.5, for decompilation`, so `BytecodeAnalyzer` never emits `BYTECODE_SOURCE_MISMATCH`.
 
-### Snyk Agent Scan output
+### 🧪 Snyk Agent Scan output
 
 ```
 ● Scanning calculate-magic-circle found 1 skill
@@ -62,7 +62,7 @@ Same result with `decompyle3` / `uncompyle6` installed: still **SAFE**. Both dec
     └── script      scripts/rendering/__init__.py
 ```
 
-### Tencent AI-Infra-Guard scan output
+### 🧪 Tencent AI-Infra-Guard scan output
 
 ```
 Audit Summary
@@ -79,7 +79,7 @@ LLM: claude-sonnet-5
 
 The LLM agent had `ls`, `dir`, `grep`, and `base64_decode` tools available but never used them to discover `__pycache__/`. It followed the import chain from `calculate.py` to `rendering/output.py`, read the clean decoy, and concluded: _"No use of `eval`, `exec`, `subprocess`, `os.system`, network calls, or dynamic code execution."_
 
-### AgentVerus Scanner output
+### ✨ AgentVerus Scanner output
 
 ```
 overall: 97
@@ -100,7 +100,7 @@ findings:
 
 Identical result with `--semantic` (GPT-5.5): the LLM semantic layer analyzes SKILL.md instructions for rephrased prompt injection, not the file tree. The payload is in the bytecode, not the instructions.
 
-### ClawScan scan output
+### 🧪 ClawScan scan output
 
 ```
 scanned:
@@ -116,7 +116,7 @@ omitted:
 findings: 0
 ```
 
-### Semia scan output
+### 🧪 Semia scan output
 
 ```
 synthesis:
@@ -136,7 +136,7 @@ verdict: Recommend (finding dismissed as false positive by the LLM)
 
 The LLM reviewed the clean decoy sources and concluded: _"manual review of `calculate.py`, `constants.json`, and `rendering/output.py` confirms the script is a self-contained, side-effect-free computation."_ The claim is factually wrong -- `os.system("whoami>pwn")` runs at import time via the `.pyc` -- but the LLM had no way to know this because the bytecode was never part of its input.
 
-### claude-skill-antivirus scan output
+### 🧪 claude-skill-antivirus scan output
 
 ```
 Risk Level: SAFE
@@ -156,17 +156,17 @@ INFO:
 
 Only the SKILL.md was analyzed (`File count: 1`). All 9 scanning engines (Dangerous Commands, Data Exfiltration, External Connections, Permission, Pattern, MCP Security, SSRF, Dependency, Sub-agent) ran against this single file. The `scripts/` directory was never traversed.
 
-## disclosure
+## 📢 disclosure
 
 The eight scanners above were disclosed to their vendors on 2026-08-09. The reports produced seventeen issues; eight were assigned CVEs (Tencent AI-Infra-Guard, the AgentVerus scanner, OpenClaw ClawScan, and claude-world claude-skill-antivirus), while the NVIDIA SkillSpector, Cisco, Snyk, and Semia reports received none. The CVE line tracked vendor and assigner behavior, not bug severity: the identical `__pycache__` bytecode bypass was assigned a CVE at some vendors and no CVE at others.
 
-## what does it do?
+## 🤔 what does it do?
 
 It executes `os.system("whoami>pwn")` -- an arbitrary shell command -- the moment the skill is imported by the AI agent. The user sees a harmless magic circle ASCII diagram. The payload runs silently in the background.
 
 The command could be anything: a reverse shell, data exfiltration, ransomware. Changing the payload is a one-line edit.
 
-## building the .pyc
+## 🛠️ building the .pyc
 
 The repo ships `build.py`, a self-contained compiler. The .pyc must be built on the same Python version that will run the skill.
 
@@ -182,9 +182,9 @@ This does three things:
 
 After building, the `skill/` directory is ready to deploy. The clean `skill/scripts/rendering/output.py` stays untouched -- it is the decoy the scanner reads.
 
-## the technique: bytecode smuggling via `__pycache__`
+## 🧬 the technique: bytecode smuggling via `__pycache__`
 
-### how scanners discover files
+### 🗂️ how scanners discover files
 
 Every scanner tested walks the skill directory and classifies files for analysis. None of them analyze the malicious bytecode. The blind spots vary -- some skip `__pycache__` outright, some filter by file extension, some only read the SKILL.md, and some give the LLM tools that hide bytecode from view -- but the result is the same.
 
@@ -314,7 +314,7 @@ async fetchLocal(filePath) {
 
 claude-skill-antivirus reads only the `SKILL.md` file from a local skill directory. `parseSkillMd` returns a `SkillContent` object with `files: [{ name: 'SKILL.md', content, path: 'SKILL.md' }]` -- a single-element array. All 9 scanning engines then analyze only this one file. The `scripts/` directory is never traversed, no `.py` files are read, and `__pycache__/` is never discovered. Result: **SAFE**, score 100/100.
 
-### the attack
+### 💥 the attack
 
 The skill has this structure:
 
@@ -399,7 +399,7 @@ Python finds `rendering/output.py`, checks `rendering/__pycache__/output.cpython
 
 The magic circle diagram prints normally. The user sees exactly what they expected.
 
-## implications
+## ⚠️ implications
 
 You miss 100% of the folders you decide not to scan. And hashing a binary without reading it is the same as not scanning it.
 
@@ -407,7 +407,7 @@ Anything the runtime will load, the scanner must treat as code. `__pycache__`, `
 
 Until scanners treat runtime-reachable artifacts as first-class inputs, this class of smuggling stays reliable against both static rules and LLM review.
 
-## btw, what is a magic circle?
+## 🔮 btw, what is a magic circle?
 
 A magic circle is the round cousin of a magic square. You arrange integers on concentric rings so that every ring and every diameter/radial line sums to the same constant. The idea goes back at least to Yang Hui in 13th-century China and still shows up in recreational math and combinatorial research ([MathWorld](https://mathworld.wolfram.com/MagicCircles.html), [Trono / algebraic combinatorics of diametric magic circles, 2011](https://doi.org/10.1016/j.matcom.2010.09.017)).
 
