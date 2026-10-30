@@ -4,6 +4,42 @@ Eight scanners were tested across ten configurations. Every scan passed the skil
 
 Well, it isn't though 😈 :trollface:
 
+## 🌍 update: the bypass generalizes across the ecosystem
+
+The eight scanners below were the first batch. The same PoC skill was later run **dynamically** against **22 more publicly available skill scanners**. Every one returned a clean or passing verdict for the skill that executes `os.system("whoami>pwn")` at import.
+
+| Scanner | Stars | Scan result | Issue |
+| --- | --- | --- | --- |
+| [PrismorSec/prismor](https://github.com/PrismorSec/prismor) | 468 | scan PASS, no issues | [#796](https://github.com/PrismorSec/prismor/issues/796) |
+| [getagentseal/agentseal](https://github.com/getagentseal/agentseal) | 380 | guard clean; LLM judge safe | [#40](https://github.com/getagentseal/agentseal/issues/40) |
+| [Nova-Hunting/nova-proximity](https://github.com/Nova-Hunting/nova-proximity) | 305 | 0 flags (non-recursive scripts walk) | [#7](https://github.com/Nova-Hunting/nova-proximity/issues/7) |
+| [Fangcun-AI/SkillWard](https://github.com/Fangcun-AI/SkillWard) | 144 | is_safe (bytecode analyzer fails open) | [#3](https://github.com/Fangcun-AI/SkillWard/issues/3) |
+| [highflame-ai/ramparts](https://github.com/highflame-ai/ramparts) | 98 | 0 findings | [#154](https://github.com/highflame-ai/ramparts/issues/154) |
+| [Berserk-hub150/skillhawk](https://github.com/Berserk-hub150/skillhawk) | 67 | 100/100 A+ CLEAN | [#248](https://github.com/Berserk-hub150/skillhawk/issues/248) |
+| [panguard-ai/panguard-ai](https://github.com/panguard-ai/panguard-ai) | 65 | Threats found 0 | [#60](https://github.com/panguard-ai/panguard-ai/issues/60) |
+| [gl0di/clawseccheck](https://github.com/gl0di/clawseccheck) | 58 | vet-skill INSTALL, all axes PASS | [#52](https://github.com/gl0di/clawseccheck/issues/52) |
+| [T-Zevin/SkillGuardrail](https://github.com/T-Zevin/SkillGuardrail) | 57 | PASS 0/100 (reads the pyc, allowlists it) | [#13](https://github.com/T-Zevin/SkillGuardrail/issues/13) |
+| [qualixar/skillfortify](https://github.com/qualixar/skillfortify) | 40 | SAFE, 0 findings | [#10](https://github.com/qualixar/skillfortify/issues/10) |
+| [ryo-ebata/cc-audit](https://github.com/ryo-ebata/cc-audit) | 26 | PASS, 0 issues | [#611](https://github.com/ryo-ebata/cc-audit/issues/611) |
+| [EvolutionUnleashed/skill-sentinel](https://github.com/EvolutionUnleashed/skill-sentinel) | 17 | LLM judge clean | [#1](https://github.com/EvolutionUnleashed/skill-sentinel/issues/1) |
+| [theinfosecguy/razin](https://github.com/theinfosecguy/razin) | 16 | 1 file scanned, only a low info note | [#67](https://github.com/theinfosecguy/razin/issues/67) |
+| [Teycir/SkillsGuard](https://github.com/Teycir/SkillsGuard) | 15 | No issues, risk 0/100 | [#2](https://github.com/Teycir/SkillsGuard/issues/2) |
+| [evilstar2016/skill-doctor](https://github.com/evilstar2016/skill-doctor) | 14 | safety audit, No findings | [#11](https://github.com/evilstar2016/skill-doctor/issues/11) |
+| [bawbel/scanner](https://github.com/bawbel/scanner) | 12 | CLEAN 0.0/10 | [#132](https://github.com/bawbel/scanner/issues/132) |
+| [metahub-ai/assay](https://github.com/metahub-ai/assay) | 12 | OVERALL 94.5/100 PASS | [#7](https://github.com/metahub-ai/assay/issues/7) |
+| [agentigy/skillcheck](https://github.com/agentigy/skillcheck) | 11 | 0 findings, 1 file scanned | [#14](https://github.com/agentigy/skillcheck/issues/14) |
+| [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan) | 8 | PASS 0.0/10 (sandbox copies only SKILL.md) | [#1](https://github.com/NMitchem/SkillScan/issues/1) |
+| [syedabbast/skill-scanner](https://github.com/syedabbast/skill-scanner) | 7 | CLEAN | [#1](https://github.com/syedabbast/skill-scanner/issues/1) |
+| [skilltrust/skill-detector](https://github.com/skilltrust/skill-detector) | 3 | grade A, no concerns | [#53](https://github.com/skilltrust/skill-detector/issues/53) |
+| [bitdefender/Agent-Skill-Scanner](https://github.com/bitdefender/Agent-Skill-Scanner) | 9 | live backend CLEAN in scan and submit (deep) modes | [#1](https://github.com/bitdefender/Agent-Skill-Scanner/issues/1) |
+
+New failure modes seen beyond the original three (skip-list exclusion, partial visibility, fail-open):
+
+- **excuse-the-cache** -- SkillGuardrail reads the `.pyc`, classifies it as a dangerous executable, then allowlists it *because* it sits in `__pycache__`, the exact location PEP 552 loads it from, and passes.
+- **dynamic analysis is not a free fix** -- SkillScan ships a Docker sandbox but copies only `SKILL.md` into it and drives a language model over prompts, so the payload never enters the sandbox.
+- **runtime guardrails miss it too** -- Prismor's runtime hooks see the benign `python3 calculate.py`; the payload runs as a subprocess below that boundary.
+- **LLM judges rule only on what they are handed** -- a judge told to read every file still misses it, because compiled bytecode is not reconstructable from a text read.
+
 ## 🔍 scan results
 
 | Company | Scanner | Version | LLM | Verdict | Findings |
